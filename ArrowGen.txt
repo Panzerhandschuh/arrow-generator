@@ -1,0 +1,459 @@
+; ArrowGen Features:
+; No crossovers or double steps
+; Few repeating patterns
+; Switch directions about every half measure (randomized)
+
+~1::
+	curArrow = 1
+	ProcessArrows()
+	return
+~2::
+	curArrow = 2
+	ProcessArrows()
+	return
+~3::
+	curArrow = 3
+	ProcessArrows()
+	return
+~4::
+	curArrow = 4
+	ProcessArrows()
+	return
+
+Numpad1::RandGen()
+Numpad2::
+	toggle = 1
+	while toggle
+	{
+		Send {Numpad1 down}
+		Sleep 100
+	}
+	return
+Numpad3::toggle = 0
+Numpad4::ChangeDirection(2) ; Left
+Numpad5::ClearArrows()
+Numpad6::ChangeDirection(1) ; Right
+
+RandGen()
+{
+	global arrowCount, switchChance, curDirection, prevArrow
+	static minArrows = 4 ; Minimum arrows until possible switch. Decrease for sooner possible switches.
+	static chanceIncr = 0.1 ; How much the chances for a switch goes up after each arrow. Decrease for less frequent switches. Set to 1.0 to switch immediately after the min arrows are reached.
+	static upDownSwitchChance = 1.0 ; Chance for a switch on up/down arrows. Up/down transitions (ex: up left down) are harder than left/right transitions (ex: left right up). Setting this to 0 will only generate transitions from left or right. Lowering this also reduces the frequency of transitions overall since they can't occur as often on up/down arrows.
+	static upDownFailChanceExtra = 0.5 ; Extra chance for a switch after an up/down switch fails
+	
+	if (curDirection = "") ; Set initial direction
+	{
+		Random rndDir, 1, 2
+		curDirection = %rndDir%
+	}
+	
+	if (arrowCount >= minArrows) ; Increase switch chance
+		switchChance += chanceIncr
+	else
+		arrowCount++
+	
+	Random result, 0.0, 1.0
+	if (switchChance >= result) ; Switch direction
+	{
+		if (prevArrow = 2 || prevArrow = 3)
+		{
+			Random result2, 0.0, 1.0
+			if (upDownSwitchChance >= result2)
+			{
+				switchChance =
+				arrowCount =
+				SwitchGen()
+				if (curDirection = 1)
+					curDirection = 2
+				else
+					curDirection = 1
+			}
+			else
+				switchChance += upDownFailChanceExtra
+		}
+		else
+		{
+			switchChance =
+			arrowCount =
+			SwitchGen()
+			if (curDirection = 1)
+				curDirection = 2
+			else
+				curDirection = 1
+		}
+	}
+	
+	if (curDirection = 1)
+		RightGen()
+	else
+		LeftGen()
+}
+
+RightGen()
+{
+	global curArrow, prevArrow, prevArrow2, prevArrow3, prevArrow4
+	
+	if (curArrow = "")
+	{
+		Random, curArrow, 1, 2
+		if (curArrow = 2)
+			curArrow = 4
+	}
+	else if (prevArrow = 1)
+	{
+		if (prevArrow2 = 2 && prevArrow4 = 2)
+			curArrow = 4
+		else if (prevArrow2 = 4 && prevArrow4 = 4)
+			curArrow = 2
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 2)
+					curArrow = 4
+				else
+					curArrow = 2
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 2
+				else
+					curArrow = 4
+			}
+		}
+	}
+	else if (prevArrow = 2)
+	{
+		if (prevArrow2 = 1 && prevArrow4 = 1)
+			curArrow = 3
+		else if (prevArrow2 = 3 && prevArrow4 = 3)
+			curArrow = 1
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 1)
+					curArrow = 3
+				else
+					curArrow = 1
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 1
+				else
+					curArrow = 3
+			}
+		}
+	}
+	else if (prevArrow = 3)
+	{
+		if (prevArrow2 = 2 && prevArrow4 = 2)
+			curArrow = 4
+		else if (prevArrow2 = 4 && prevArrow4 = 4)
+			curArrow = 2
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 2)
+					curArrow = 4
+				else
+					curArrow = 2
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 2
+				else
+					curArrow = 4
+			}
+		}
+	}
+	else if (prevArrow = 4)
+	{
+		if (prevArrow2 = 1 && prevArrow4 = 1)
+			curArrow = 3
+		else if (prevArrow2 = 3 && prevArrow4 = 3)
+			curArrow = 1
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 1)
+					curArrow = 3
+				else
+					curArrow = 1
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 1
+				else
+					curArrow = 3
+			}
+		}
+	}
+	Send %curArrow%
+	Sleep 100
+	Send {Down}
+	ProcessArrows()
+}
+
+LeftGen()
+{
+	global curArrow, prevArrow, prevArrow2, prevArrow3, prevArrow4
+	
+	if (curArrow = "")
+	{
+		Random, curArrow, 1, 2
+		if (curArrow = 2)
+			curArrow = 4
+	}
+	else if (prevArrow = 1)
+	{
+		if (prevArrow2 = 3 && prevArrow4 = 3)
+			curArrow = 4
+		else if (prevArrow2 = 4 && prevArrow4 = 4)
+			curArrow = 3
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 3)
+					curArrow = 4
+				else
+					curArrow = 3
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 3
+				else
+					curArrow = 4
+			}
+		}
+	}
+	else if (prevArrow = 2)
+	{
+		if (prevArrow2 = 3 && prevArrow4 = 3)
+			curArrow = 4
+		else if (prevArrow2 = 4 && prevArrow4 = 4)
+			curArrow = 3
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 3)
+					curArrow = 4
+				else
+					curArrow = 3
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 3
+				else
+					curArrow = 4
+			}
+		}
+	}
+	else if (prevArrow = 3)
+	{
+		if (prevArrow2 = 1 && prevArrow4 = 1)
+			curArrow = 2
+		else if (prevArrow2 = 2 && prevArrow4 = 2)
+			curArrow = 1
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 1)
+					curArrow = 2
+				else
+					curArrow = 1
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 1
+				else
+					curArrow = 2
+			}
+		}
+	}
+	else if (prevArrow = 4)
+	{
+		if (prevArrow2 = 1 && prevArrow4 = 1)
+			curArrow = 2
+		else if (prevArrow2 = 2 && prevArrow4 = 2)
+			curArrow = 1
+		else
+		{
+			if (prevArrow = prevArrow3)
+				if (prevArrow2 = 1)
+					curArrow = 2
+				else
+					curArrow = 1
+			else
+			{
+				Random, curArrow, 1, 2
+				if (curArrow = 1)
+					curArrow = 1
+				else
+					curArrow = 2
+			}
+		}
+	}
+	Send %curArrow%
+	Sleep 100
+	Send {Down}
+	ProcessArrows()
+}
+
+SwitchGen()
+{
+	global curDirection, curArrow, prevArrow, prevArrow2, prevArrow3, prevArrow4
+	
+	if (curDirection = 1) ; Right
+	{
+		if (prevArrow = 1)
+		{
+			curArrow = 4
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 2
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()	
+		}
+		
+		else if (prevArrow = 2)
+		{
+			curArrow = 1
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 3
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+		}
+		
+		else if (prevArrow = 3)
+		{
+			curArrow = 4
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 2
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+		}
+		
+		else
+		{
+			curArrow = 1
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 3
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()	
+		}
+	}
+	else ; Left
+	{
+		if (prevArrow = 1)
+		{
+			curArrow = 4
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 3
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()	
+		}
+		
+		else if (prevArrow = 2)
+		{
+			curArrow = 4
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 3
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+		}
+		
+		else if (prevArrow = 3)
+		{
+			curArrow = 1
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 2
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+		}
+		
+		else
+		{
+			curArrow = 1
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()
+			curArrow = 2
+			Send %curArrow%
+			Sleep 100
+			Send {Down}
+			ProcessArrows()	
+		}
+	}
+}
+
+ProcessArrows()
+{
+	global curArrow, prevArrow, prevArrow2, prevArrow3, prevArrow4
+	prevArrow4 = %prevArrow3%
+	prevArrow3 = %prevArrow2%
+	prevArrow2 = %prevArrow%
+	prevArrow = %curArrow%
+}
+
+ClearArrows()
+{
+	global curDirection, arrowCount, switchChance, curArrow, prevArrow, prevArrow2, prevArrow3, prevArrow4
+	prevArrow4 =
+	prevArrow3 =
+	prevArrow2 =
+	prevArrow =
+	curArrow =
+	curDirection =
+	arrowCount =
+	switchChance =
+}
+
+ChangeDirection(dir)
+{
+	global curDirection, arrowCount, switchChance
+	curDirection = %dir%
+	arrowCount =
+	switchChance =
+}
